@@ -1,4 +1,5 @@
-import { dummyPosts } from "@/dummy-post";
+"use client";
+
 import {
   Card,
   CardContent,
@@ -12,23 +13,51 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { Heart, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
+import { useState } from "react";
 
-type DumpPostType = typeof dummyPosts;
+// type DumpPostType = typeof dummyPosts;
 
+export interface Post {
+  id: string;
+  title: string;
+  content: string;
+  createdAt: string;
+  author: {
+    name: string | null;
+    image: string | null;
+  };
+  _count: {
+    comments: number;
+    likes: number;
+  };
+}
 type Props = {
-  post: DumpPostType[number];
+  // post: DumpPostType[number];
+  post: Post;
 };
 export const PostCard = ({ post }: Props) => {
-  const likeLoading = false;
-  const liked = true;
+  const { data: session } = useSession();
+  const [likeLoading, setLikeLoading] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(post._count.likes);
+  const [commentCount, setCommentCount] = useState(post._count.comments);
+
+  const handleLike = async () => {
+    if (!session) {
+      return;
+    }
+  };
 
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center space-x-4">
           <Avatar>
-            <AvatarImage src={post.author.image} />
-            <AvatarFallback>{post.author.name.charAt(0) ?? "A"}</AvatarFallback>
+            <AvatarImage src={post.author.image || ""} />
+            <AvatarFallback>
+              {post.author.name?.charAt(0) ?? "A"}
+            </AvatarFallback>
           </Avatar>
         </div>
         <div>
@@ -58,7 +87,7 @@ export const PostCard = ({ post }: Props) => {
               "fill-red-500 text-red-500": liked,
             })}
           />
-          <span>10</span>
+          <span>{likeCount}</span>
         </Button>
         <Button
           variant={"ghost"}
@@ -66,7 +95,7 @@ export const PostCard = ({ post }: Props) => {
           className="flex items-center space-x-1"
         >
           <MessageCircle className="h-4 w-4" />
-          <span>10</span>
+          <span>{commentCount}</span>
         </Button>
       </CardFooter>
     </Card>
